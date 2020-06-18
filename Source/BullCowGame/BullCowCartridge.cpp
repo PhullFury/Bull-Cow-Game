@@ -70,22 +70,6 @@ void UBullCowCartridge::ProcessGuess(FString Guess)
         return;
     }
 
-    if (Guess != HiddenWord)
-    {
-        --Lives;
-        PrintLine(TEXT("You have %i lives remaining."), Lives);
-        PrintLine(TEXT("Try guessing again!"));
-        if (Lives <= 0)
-        {
-            ClearScreen();
-            PrintLine(TEXT("You have no lives remaining."));
-            PrintLine(TEXT("The hidden word was %s."), *HiddenWord);
-            EndGame();
-            return;
-        }
-        return;
-    }
-
     //check if isogram
     if (!IsIsogram(Guess))
     {
@@ -119,7 +103,7 @@ TArray<FString> UBullCowCartridge::GetValidWords(TArray<FString> WordList) const
 
     for (FString Word : WordList)
     {
-        if (Word.Len() >= 4 && Word.Len() <= 6)
+        if (Word.Len() >= 4 && Word.Len() <= 6 && IsIsogram(Word))
         {
             ValidWords.Emplace(Word);
         }
