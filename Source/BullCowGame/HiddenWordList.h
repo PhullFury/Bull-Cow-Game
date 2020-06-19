@@ -2,7 +2,7 @@
 
 #include "CoreMinimal.h"
 
-const TArray<FString> Words = 
+const TArray<FString> Words =
 {
 	TEXT("ear"),
 	TEXT("pad"),
@@ -35,4 +35,14 @@ const TArray<FString> Words =
 	TEXT("sandworm"),
 	TEXT("rambling"),
 	TEXT("magicarp"),
+	TEXT("scrumpled"),
+	TEXT("bondmates"),
+	TEXT("playboxes"),
+	TEXT("incubator"),
+	TEXT("airplanes"),
+	TEXT("overbuilds"),
+	TEXT("humanpower"),
+	TEXT("disencharm"),
+	TEXT("outbarking"),
+	TEXT("bushwalker")
 };

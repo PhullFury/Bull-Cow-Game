@@ -5,15 +5,11 @@
 void UBullCowCartridge::BeginPlay() // When the game starts
 {
     Super::BeginPlay();
-    GetValidWords(Words);
+    Isograms = GetValidWords(Words);
     SetUpGame();
-    
-    PrintLine(TEXT("The number of possible words is %i."), Words.Num());
-    PrintLine(TEXT("The numner of valid words is %i."), GetValidWords(Words).Num());
-    PrintLine(TEXT("The Hidden Word is: %s."), *HiddenWord); // Debug line
 }
 
-void UBullCowCartridge::OnInput(const FString& Input) // When the player hits enter
+void UBullCowCartridge::OnInput(const FString& PlayerInput) // When the player hits enter
 {
     if (bGameOver)
     {
@@ -22,7 +18,7 @@ void UBullCowCartridge::OnInput(const FString& Input) // When the player hits en
     }
     else // Cheking player guess
     {
-        ProcessGuess(Input);
+        ProcessGuess(PlayerInput);
     }
 }
 
@@ -30,10 +26,13 @@ void UBullCowCartridge::SetUpGame ()
 {
     PrintLine(TEXT("Welcome to the Bull Cow Game"));
 
-    HiddenWord = TEXT("Cake");
+    int32 Number = FMath::RandRange(0, Isograms.Num() - 1);
+
+    HiddenWord = Isograms[Number];
     Lives = HiddenWord.Len();
     bGameOver = false;
 
+    PrintLine(TEXT("The Hidden Word is: %s."), *HiddenWord); // Debug line
     PrintLine(TEXT("Guess the %i letter word."), HiddenWord.Len());
     PrintLine(TEXT("You have %i lives."), Lives);
     PrintLine(TEXT("Type your guess.\nPress enter to continue..."));//prompt player to guess
@@ -45,7 +44,7 @@ void UBullCowCartridge::EndGame()
     PrintLine(TEXT("Press enter to play again."));
 }
 
-void UBullCowCartridge::ProcessGuess(FString Guess)
+void UBullCowCartridge::ProcessGuess(const FString& Guess)
 {
     if (Guess == HiddenWord)
     {
@@ -60,25 +59,36 @@ void UBullCowCartridge::ProcessGuess(FString Guess)
         PrintLine(TEXT("The word is %i characters long."), HiddenWord.Len());
         PrintLine(TEXT("You have %i lives remaining."), Lives);
         PrintLine(TEXT("Try guessing again!"));
-        if (Lives <= 0)
-        {
-            ClearScreen();
-            PrintLine(TEXT("You have no lives remaining."));
-            PrintLine(TEXT("The hidden word was %s."), *HiddenWord);
-            EndGame();
-        }
         return;
     }
 
     //check if isogram
     if (!IsIsogram(Guess))
     {
+        --Lives;
         PrintLine(TEXT("No repeating letters, guess again!"));
+        PrintLine(TEXT("You have %i lives remaining."), Lives);
         return;
     }
+
+    --Lives;
+
+    if (Lives <= 0)
+    {
+        ClearScreen();
+        PrintLine(TEXT("You have no lives remaining."));
+        PrintLine(TEXT("The hidden word was %s."), *HiddenWord);
+        EndGame();
+        return;
+    }
+
+    //show the player Bulls Cows
+    FBullCowCount Score = GetBullCows(Guess);
+    PrintLine(TEXT("You have %i bulls and %i cows."), Score.Bulls, Score.Cows);
+    PrintLine(TEXT("You have %i lives remaining."), Lives);
 }
 
-bool UBullCowCartridge::IsIsogram(FString Word) const
+bool UBullCowCartridge::IsIsogram(const FString& Word) const
 {
     /*int32 Index = 0;
     int32 Comparison = Index + 1;*/
@@ -97,7 +107,7 @@ bool UBullCowCartridge::IsIsogram(FString Word) const
     return true;
 }
 
-TArray<FString> UBullCowCartridge::GetValidWords(TArray<FString> WordList) const
+TArray<FString> UBullCowCartridge::GetValidWords(const TArray<FString>& WordList) const
 {
     TArray<FString> ValidWords;
 
@@ -110,4 +120,28 @@ TArray<FString> UBullCowCartridge::GetValidWords(TArray<FString> WordList) const
     }
 
     return ValidWords;
+}
+
+FBullCowCount UBullCowCartridge::GetBullCows(const FString& Guess) const
+{
+    FBullCowCount Count;
+
+    for (int32 GuessIndex = 0; GuessIndex < Guess.Len(); GuessIndex++)
+    {
+        if (Guess[GuessIndex] == HiddenWord[GuessIndex])
+        {
+            Count.Bulls++;
+            continue;
+        }
+
+        for (int32 HiddenIndex = 0; HiddenIndex < HiddenWord.Len(); HiddenIndex++)
+        {
+            if (Guess[GuessIndex] == HiddenWord[HiddenIndex])
+            {
+                Count.Cows++;
+                break;
+            }
+        }
+    }
+    return Count;
 }
